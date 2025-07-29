@@ -1,0 +1,433 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -260,
+        -20
+      ],
+      "id": "ed46b6d1-a5ba-44c5-856b-5aa4c402a60d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "DOC_ID",
+          "mode": "list",
+          "cachedResultName": "DOC_NAME",
+          "cachedResultUrl": "DOC_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet_namea",
+          "cachedResultUrl": "DOC_URL"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -40,
+        -20
+      ],
+      "id": "a1f3c9fa-17a7-452f-9f85-01999e5ae2de",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GoogleSheetsaccountid",
+          "name": "Google Sheets account xx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "58d371f4-cb8b-499b-8661-80358537ec5c",
+              "name": "URL",
+              "value": "=https://{{ $json.Domeniu }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        180,
+        -20
+      ],
+      "id": "15dfcc31-f20b-4174-af7f-5e78f8148228",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.URL }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        -20
+      ],
+      "id": "be456cf9-4c36-4901-b30a-84431d708361",
+      "name": "HTTP Request",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d331e305-5783-47f6-88e0-e421e81d9025",
+              "leftValue": "={{ $json.error.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        580,
+        -40
+      ],
+      "id": "2678fe8d-ce18-4e25-b7d6-36d36bb57d3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet').item.json.Email }}",
+        "subject": "❌ Status: site-ul nu răspunde.",
+        "message": "=În urma verificării automate efectuate la data de {{$now}}, vă informăm că site-ul  {{ $('Get row(s) in sheet').item.json.Domeniu }} nu a putut fi accesat.\n\n❌ Status: site-ul nu răspunde.\n\nVă recomandăm să verificați starea serverului sau conexiunea rețelei cât mai curând posibil.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        -120
+      ],
+      "id": "b38bd96f-91b9-444a-aefd-1cf23175d98c",
+      "name": "PICAT",
+      "webhookId": "some id",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "some id",
+          "name": "Gmail account xx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet').item.json.Email }}",
+        "subject": "✅ Site ul functioneza in paramterii",
+        "message": "=În urma verificării automate efectuate la data de {{$now}}, vă informăm că starea site-ului  este următoarea:  ✅ Site-ul {{ $('Get row(s) in sheet').item.json.Domeniu }} este activ și răspunde în mod corespunzător.  Nu este necesară nicio intervenție suplimentară în acest moment.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        80
+      ],
+      "id": "67f6a0af-dff8-448f-af5b-9b9540ae4cc5",
+      "name": "ONLINE",
+      "webhookId": "some id",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "some id",
+          "name": "Gmail account xx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "DOC_ID",
+          "mode": "list",
+          "cachedResultName": "DOC_NAME",
+          "cachedResultUrl": "DOC_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet_namea",
+          "cachedResultUrl": "DOC_URL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "PICAT",
+            "Domeniu": "={{ $('Get row(s) in sheet').item.json.Domeniu }}"
+          },
+          "matchingColumns": [
+            "Domeniu"
+          ],
+          "schema": [
+            {
+              "id": "Domeniu",
+              "displayName": "Domeniu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        800,
+        -300
+      ],
+      "id": "533cdee7-b3d0-436f-a2c3-0ba104601a66",
+      "name": "Update PICAT",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GoogleSheetsaccountid",
+          "name": "Google Sheets account xx"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "DOC_ID",
+          "mode": "list",
+          "cachedResultName": "DOC_NAME",
+          "cachedResultUrl": "DOC_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheet_namea",
+          "cachedResultUrl": "DOC_URL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "OK",
+            "Domeniu": "={{ $('Get row(s) in sheet').item.json.Domeniu }}"
+          },
+          "matchingColumns": [
+            "Domeniu"
+          ],
+          "schema": [
+            {
+              "id": "Domeniu",
+              "displayName": "Domeniu",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        800,
+        280
+      ],
+      "id": "153c207c-3a13-483d-b3f3-b0b194ffdc6b",
+      "name": "Update OK",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GoogleSheetsaccountid",
+          "name": "Google Sheets account xx"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "PICAT",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update PICAT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ONLINE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "instanceId"
+  }
+}
